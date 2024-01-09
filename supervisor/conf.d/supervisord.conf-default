@@ -1,0 +1,19 @@
+[unix_http_server]
+file=/tmp/supervisor.sock
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisord]
+nodaemon=true
+minfds=1024
+minprocs=200
+user=33
+logfile=/var/www/html/storage/logs/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
+
+[supervisorctl]
+serverurl=unix:///tmp/supervisor.sock
+
+[include]
+files = /etc/supervisor/conf.d/*.conf

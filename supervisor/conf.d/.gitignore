@@ -1,0 +1,5 @@
+*
+!.gitignore
+!default.conf-default
+!horizon.conf-default
+!supervisord.conf-default

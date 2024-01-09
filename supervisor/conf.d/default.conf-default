@@ -1,0 +1,12 @@
+[program:default-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/local/bin/php /var/www/html/artisan queue:work
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=33
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/default-worker.log
+stopwaitsecs=3600

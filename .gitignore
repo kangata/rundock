@@ -1,0 +1,12 @@
+*
+!.gitignore
+!.env.example
+!composer.json
+
+!/bin
+!/data
+!/nginx
+!/php
+!/php-fpm.d
+!/stubs
+!/supervisor

@@ -1,0 +1,4 @@
+*
+!.gitignore
+!php.ini-development
+!php.ini-production

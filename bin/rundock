@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+export RUNDOCK_BASE_PATH="$(realpath $(dirname $(dirname $0)))"
+export RUNDOCK_BIN_PATH="$RUNDOCK_BASE_PATH/bin"
+export RUNDOCK_STUBS_PATH="$RUNDOCK_BASE_PATH/stubs"
+
+export PROJECT_PATH="$(realpath $(dirname $(dirname $(dirname $RUNDOCK_BASE_PATH))))"
+
+PUID="${RUNDOCK_PGID:-33}"
+PGID="${RUNDOCK_PGID:-33}"
+
+COMPOSE="$RUNDOCK_BIN_PATH/compose"
+CMD="$COMPOSE exec -u $PUID:$PGID"
+
+export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
+
+# Read .env file
+if [[ -f "$PROJECT_PATH/rundock/.env" ]]
+then
+    export $(grep -v "^#" "$PROJECT_PATH/rundock/.env" | xargs)
+fi
+
+# Check environment
+if [[ "$1" == "local" || "$1" == "dev" || "$1" == "staging" || "$1" == "production" ]]
+then
+    APP_ENV=$1
+
+    shift 1
+fi
+
+# Add service
+if [[ "$1" == "add" ]]
+then
+    if [[ ! -f "$RUNDOCK_STUBS_PATH/$2.stub" ]]
+    then
+        printf "File $RUNDOCK_STUBS_PATH/$2.stub does not exists.\n"
+
+        exit
+    fi
+
+    if [[ ! -d "$RUNDOCK_BASE_PATH/$APP_ENV-confs" ]]
+    then
+        mkdir "$RUNDOCK_BASE_PATH/$APP_ENV-confs"
+    fi
+
+    cp "$RUNDOCK_STUBS_PATH/$2.stub" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+
+    # Add php config
+    if [[ "$2" =~ "app" ]]
+    then
+        cp "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
+
+        if [[ "$APP_ENV" == "local" || "$APP_ENV" == "dev" ]]
+        then
+            cp "$RUNDOCK_BASE_PATH/php/php.ini-development" "$RUNDOCK_BASE_PATH/php/php.ini"
+        else
+            cp "$RUNDOCK_BASE_PATH/php/php.ini-production" "$RUNDOCK_BASE_PATH/php/php.ini"
+        fi
+    fi
+
+    if [[ "$2" =~ "supervisor" ]]
+    then
+        cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
+        cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+    fi
+
+    exit
+fi
+
+# Publish services
+if [[ "$1" == "publish:services" ]]
+then
+    if [[ ! -d "$PROJECT_PATH/rundock" ]]
+    then
+        mkdir "$PROJECT_PATH/rundock"
+    fi
+
+    cp -r "$RUNDOCK_BASE_PATH/$APP_ENV-confs" "$PROJECT_PATH/rundock/"
+
+    for file in $(find "$PROJECT_PATH/rundock/$APP_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
+    do
+        sed -i 's#{RUNDOCK_BASE_PATH}#{PROJECT_PATH}/rundock#g' $file
+    done
+
+    exit
+fi
+
+# Publish config
+if [[ "$1" == "publish:config" ]]
+then
+    if [[ ! -f "$RUNDOCK_STUBS_PATH/$2.stub" ]]
+    then
+        printf "Service $2 does not exists.\n"
+
+        exit
+    fi
+
+    if [[ ! -d "$PROJECT_PATH/rundock" ]]
+    then
+        mkdir "$PROJECT_PATH/rundock"
+    fi
+
+    if [[ "$2" =~ "app" ]]
+    then
+        cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/rundock/"
+
+        cp -r "$RUNDOCK_BASE_PATH/php-fpm.d" "$PROJECT_PATH/rundock/"
+        cp -r "$RUNDOCK_BASE_PATH/php" "$PROJECT_PATH/rundock/"
+
+        exit
+    fi
+
+    if [[ "$2" =~ "supervisor" ]]
+    then
+        cp -r "$RUNDOCK_BASE_PATH/supervisor" "$PROJECT_PATH/rundock/"
+
+        exit
+    fi
+fi
+
+# Command alias
+if [[ "$1" == "php" || "$1" == "composer" ]]
+then
+    $CMD app ${@}
+
+    exit
+fi
+
+if [[ "$1" == "artisan" ]]
+then
+    $CMD app php ${@}
+
+    exit
+fi
+
+if [[ "$1" == "redis-cli" ]]
+then
+    $CMD ${@}
+
+    exit
+fi
+
+if [[ "$1" == "supervisorctl" ]]
+then
+    $CMD supervisor ${@}
+
+    exit
+fi
+
+$COMPOSE ${@}

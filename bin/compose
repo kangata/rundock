@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+export PROJECT_NAME="${PROJECT_NAME:-$(basename "$PROJECT_PATH")}"
+
+export APP_ENV="${APP_ENV:-dev}"
+
+CMD="docker compose -p $PROJECT_NAME-$APP_ENV"
+
+if command -v docker-compose &> /dev/null
+then
+    CMD="docker-compose -p $PROJECT_NAME-$APP_ENV"
+fi
+
+printf "PROJECT: $PROJECT_NAME ($APP_ENV)\n\n"
+
+load_config() {
+    if [[ -d "$1" ]]
+    then
+        for config in $(find "$1" -regex '^\(.*yml\|.*yaml\)$')
+        do
+            CMD+=" -f $config"
+
+            if [[ "$(basename $config)" =~ "supervisor" ]]
+            then
+                if [[ ! -d "$PROJECT_PATH/storage/logs/supervisor" ]]
+                then
+                    mkdir "$PROJECT_PATH/storage/logs/supervisor"
+                fi
+            fi
+        done
+    else
+        printf "Directory $1 does not exists.\n\n"
+
+        exit
+    fi
+}
+
+use_default_config() {
+    load_config "$RUNDOCK_BASE_PATH/$APP_ENV-confs"
+}
+
+if [[ -d "$PROJECT_PATH/rundock/$APP_ENV-confs" ]]
+then
+    load_config "$PROJECT_PATH/rundock/$APP_ENV-confs"
+else
+    use_default_config
+fi
+
+if [[ ! -d "$PROJECT_PATH/rundock/data" ]]
+then
+    mkdir -p "$PROJECT_PATH/rundock/data"
+fi
+
+# Run docker compose
+$CMD ${@}

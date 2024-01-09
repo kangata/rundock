@@ -1,0 +1,24 @@
+{
+    "name": "quetzal-studio/rundock",
+    "description": "Docker files for running a basic Laravel application.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ata",
+            "email": "quetzalskeith@gmail.com"
+        }
+    ],
+    "bin": [
+        "bin/rundock"
+    ],
+    "autoload": {
+        "psr-4": {
+            "QuetzalStudio\\Rundock\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -6,6 +6,12 @@ export RUNDOCK_STUBS_PATH="$RUNDOCK_BASE_PATH/stubs"
 
 export PROJECT_PATH="$(realpath $(dirname $(dirname $(dirname $RUNDOCK_BASE_PATH))))"
 
+# Read .env file
+if [[ -f "$PROJECT_PATH/rundock/.env" ]]
+then
+    export $(grep -v "^#" "$PROJECT_PATH/rundock/.env" | xargs)
+fi
+
 PUID="${RUNDOCK_PGID:-33}"
 PGID="${RUNDOCK_PGID:-33}"
 
@@ -13,12 +19,6 @@ COMPOSE="$RUNDOCK_BIN_PATH/compose"
 CMD="$COMPOSE exec -u $PUID:$PGID"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
-
-# Read .env file
-if [[ -f "$PROJECT_PATH/rundock/.env" ]]
-then
-    export $(grep -v "^#" "$PROJECT_PATH/rundock/.env" | xargs)
-fi
 
 # Check environment
 if [[ "$1" == "local" || "$1" == "dev" || "$1" == "staging" || "$1" == "production" ]]

@@ -12,7 +12,7 @@ then
     export $(grep -v "^#" "$PROJECT_PATH/rundock/.env" | xargs)
 fi
 
-PUID="${RUNDOCK_PGID:-33}"
+PUID="${RUNDOCK_PUID:-33}"
 PGID="${RUNDOCK_PGID:-33}"
 
 COMPOSE="$RUNDOCK_BIN_PATH/compose"
@@ -143,7 +143,7 @@ fi
 
 if [[ "$1" == "redis-cli" ]]
 then
-    $CMD ${@}
+    $CMD redis ${@}
 
     exit
 fi

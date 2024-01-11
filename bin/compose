@@ -4,6 +4,8 @@ export PROJECT_NAME="${PROJECT_NAME:-$(basename "$PROJECT_PATH")}"
 
 export APP_ENV="${APP_ENV:-dev}"
 
+MERGE_COMPOSE="${MERGE_COMPOSE:-false}"
+
 CMD="docker compose -p $PROJECT_NAME-$APP_ENV"
 
 if command -v docker-compose &> /dev/null
@@ -41,6 +43,11 @@ use_default_config() {
 
 if [[ -d "$PROJECT_PATH/rundock/$APP_ENV-confs" ]]
 then
+    if $MERGE_COMPOSE -eq true
+    then
+        use_default_config
+    fi
+
     load_config "$PROJECT_PATH/rundock/$APP_ENV-confs"
 else
     use_default_config

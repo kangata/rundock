@@ -118,6 +118,14 @@ then
     fi
 fi
 
+# Publish shortcut
+if [[ "$1" == "publish:shortcut" ]]
+then
+    cp $RUNDOCK_BASE_PATH/shortcut/* $PROJECT_PATH/rundock/
+
+    exit
+fi
+
 # Command alias
 if [[ "$1" == "php" || "$1" == "composer" ]]
 then

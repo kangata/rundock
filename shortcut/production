@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+ENV=production
+
+SCRIPT_PATH=$(realpath $(dirname $0))
+
+source $SCRIPT_PATH/include.sh

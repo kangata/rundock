@@ -62,6 +62,11 @@ then
     then
         cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
         cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+
+        if [[ "$3" == "--horizon" ]]
+        then
+            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf"
+        fi
     fi
 
     exit

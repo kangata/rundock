@@ -38,7 +38,7 @@ then
     done
 fi
 
-if [[ ! -d "$COMPOSE_PATH" ]]
+if [[ -d "$STUBS_PATH" && ! -d "$COMPOSE_PATH" ]]
 then
     mkdir "$COMPOSE_PATH"
 

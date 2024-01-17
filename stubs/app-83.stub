@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: quetzalarc/php-laravel:8.2-fpm-alpine
+    image: quetzalarc/php-laravel:8.3-fpm-alpine
     restart: always
     volumes:
       - ${PROJECT_PATH}:/var/www/html

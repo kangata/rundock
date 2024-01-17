@@ -7,7 +7,7 @@ services:
       - ${PROJECT_PATH}/storage/logs/supervisor:/var/log/supervisor
       - ${RUNDOCK_BASE_PATH}/supervisor/conf.d:/etc/supervisor/conf.d
       - ${RUNDOCK_BASE_PATH}/supervisor/conf.d/supervisord.conf:/etc/supervisord.conf
-      - ${PROJECT_PATH}/rundock/data/.config:/.config
+      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.configg
     logging:
       options:
         max-file: '1'

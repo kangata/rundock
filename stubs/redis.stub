@@ -3,7 +3,7 @@ services:
     image: redis:alpine
     restart: always
     volumes:
-      - ${PROJECT_PATH}/rundock/data/redis:/data
+      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/redis:/data
     logging:
       options:
         max-file: '1'

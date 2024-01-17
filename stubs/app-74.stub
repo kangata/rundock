@@ -8,7 +8,7 @@ services:
       - ${PROJECT_PATH}:/var/www/html
       - ${RUNDOCK_BASE_PATH}/php/php.ini:/usr/local/etc/php/php.ini
       - ${RUNDOCK_BASE_PATH}/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
-      - ${PROJECT_PATH}/rundock/data/.config:/.config
+      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
     logging:
       options:
         max-file: '1'

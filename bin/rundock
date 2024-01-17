@@ -5,11 +5,12 @@ export RUNDOCK_BIN_PATH="$RUNDOCK_BASE_PATH/bin"
 export RUNDOCK_STUBS_PATH="$RUNDOCK_BASE_PATH/stubs"
 
 export PROJECT_PATH="$(realpath $(dirname $(dirname $(dirname $RUNDOCK_BASE_PATH))))"
+export PROJECT_RUNDOCK_DIR="${PROJECT_RUNDOCK_DIR:-rundock}"
 
 # Read .env file
-if [[ -f "$PROJECT_PATH/rundock/.env" ]]
+if [[ -f "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/.env" ]]
 then
-    export $(grep -v "^#" "$PROJECT_PATH/rundock/.env" | xargs)
+    export $(grep -v "^#" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/.env" | xargs)
 fi
 
 PUID="${RUNDOCK_PUID:-33}"
@@ -75,16 +76,16 @@ fi
 # Publish services
 if [[ "$1" == "publish:services" ]]
 then
-    if [[ ! -d "$PROJECT_PATH/rundock" ]]
+    if [[ ! -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR" ]]
     then
-        mkdir "$PROJECT_PATH/rundock"
+        mkdir "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR"
     fi
 
-    cp -r "$RUNDOCK_BASE_PATH/$APP_ENV-confs" "$PROJECT_PATH/rundock/"
+    cp -r "$RUNDOCK_BASE_PATH/$APP_ENV-confs" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
-    for file in $(find "$PROJECT_PATH/rundock/$APP_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
+    for file in $(find "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
     do
-        sed -i 's#{RUNDOCK_BASE_PATH}#{PROJECT_PATH}/rundock#g' $file
+        sed -i 's#${RUNDOCK_BASE_PATH}#${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}#g' $file
     done
 
     exit
@@ -100,24 +101,24 @@ then
         exit
     fi
 
-    if [[ ! -d "$PROJECT_PATH/rundock" ]]
+    if [[ ! -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR" ]]
     then
-        mkdir "$PROJECT_PATH/rundock"
+        mkdir "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR"
     fi
 
     if [[ "$2" =~ "app" ]]
     then
-        cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/rundock/"
+        cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
-        cp -r "$RUNDOCK_BASE_PATH/php-fpm.d" "$PROJECT_PATH/rundock/"
-        cp -r "$RUNDOCK_BASE_PATH/php" "$PROJECT_PATH/rundock/"
+        cp -r "$RUNDOCK_BASE_PATH/php-fpm.d" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$RUNDOCK_BASE_PATH/php" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi
 
     if [[ "$2" =~ "supervisor" ]]
     then
-        cp -r "$RUNDOCK_BASE_PATH/supervisor" "$PROJECT_PATH/rundock/"
+        cp -r "$RUNDOCK_BASE_PATH/supervisor" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi
@@ -126,12 +127,19 @@ fi
 # Publish shortcut
 if [[ "$1" == "publish:shortcut" ]]
 then
-    cp $RUNDOCK_BASE_PATH/shortcut/* $PROJECT_PATH/rundock/
+    cp $RUNDOCK_BASE_PATH/shortcut/* $PROJECT_PATH/$PROJECT_RUNDOCK_DIR/
 
     exit
 fi
 
 # Command alias
+if [[ "$1" == "git"  ]]
+then
+    $CMD app git ${@}
+
+    exit
+fi
+
 if [[ "$1" == "php" || "$1" == "composer" ]]
 then
     $CMD app ${@}

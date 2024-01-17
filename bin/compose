@@ -41,21 +41,21 @@ use_default_config() {
     load_config "$RUNDOCK_BASE_PATH/$APP_ENV-confs"
 }
 
-if [[ -d "$PROJECT_PATH/rundock/$APP_ENV-confs" ]]
+if [[ -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs" ]]
 then
     if $MERGE_COMPOSE -eq true
     then
         use_default_config
     fi
 
-    load_config "$PROJECT_PATH/rundock/$APP_ENV-confs"
+    load_config "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs"
 else
     use_default_config
 fi
 
-if [[ ! -d "$PROJECT_PATH/rundock/data" ]]
+if [[ ! -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/data" ]]
 then
-    mkdir -p "$PROJECT_PATH/rundock/data"
+    mkdir -p "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/data"
 fi
 
 # Run docker compose

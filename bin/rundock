@@ -73,6 +73,20 @@ then
     exit
 fi
 
+if [[ "$1" == "remove" ]]
+then
+    if [[ ! -f "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml" ]]
+    then
+        printf "Service not installed.\n"
+
+        exit
+    fi
+
+    rm "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+
+    exit
+fi
+
 # Publish services
 if [[ "$1" == "publish:services" ]]
 then

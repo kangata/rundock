@@ -51,6 +51,9 @@ then
     then
         cp "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
 
+        sed -i -E "s/^user = .*/user = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
+        sed -i -E "s/^group = .*/group = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
+
         if [[ "$APP_ENV" == "local" || "$APP_ENV" == "dev" ]]
         then
             cp "$RUNDOCK_BASE_PATH/php/php.ini-development" "$RUNDOCK_BASE_PATH/php/php.ini"
@@ -62,11 +65,18 @@ then
     if [[ "$2" =~ "supervisor" ]]
     then
         cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
-        cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+    
+        sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
 
         if [[ "$3" == "--horizon" ]]
         then
             cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf"
+
+            sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf"
+        else
+            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+
+            sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
         fi
     fi
 

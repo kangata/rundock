@@ -47,7 +47,7 @@ then
     cp "$RUNDOCK_STUBS_PATH/$2.stub" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
 
     # Add php config
-    if [[ "$2" =~ "app" ]]
+    if [[ "$2" =~ "app-nginx" ]]
     then
         cp "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
 
@@ -80,6 +80,8 @@ then
         fi
     fi
 
+    echo "$2: added"
+
     exit
 fi
 
@@ -93,6 +95,8 @@ then
     fi
 
     rm "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+
+    echo "$2: removed"
 
     exit
 fi
@@ -130,7 +134,7 @@ then
         mkdir "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR"
     fi
 
-    if [[ "$2" =~ "app" ]]
+    if [[ "$2" =~ "app-nginx" ]]
     then
         cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 

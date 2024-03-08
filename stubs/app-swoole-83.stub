@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    image: quetzalarc/php-laravel:8.3-swoole
+    restart: always
+    volumes:
+      - ${PROJECT_PATH}:/var/www
+      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
+    ports:
+      - 8000:80
+    logging:
+      options:
+        max-file: '1'
+        max-size: '1m'
+    environment:
+      - TZ=Asia/Jakarta
+
+networks:
+  default:
+    name: ${NETWORK_DEFAULT_NAME:-$PROJECT_NAME}
+    external: ${NETWORK_DEFAULT_EXTERNAL:-false}

@@ -7,8 +7,6 @@ services:
     volumes:
       - ${PROJECT_PATH}:/var/www
       - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
-    ports:
-      - 8000:80
     logging:
       options:
         max-file: '1'

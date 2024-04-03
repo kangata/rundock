@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/redis:/data
+    logging:
+      options:
+        max-file: '1'
+        max-size: '1m'
+    environment:
+      - TZ=Asia/Jakarta
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s

@@ -17,7 +17,8 @@ PUID="${RUNDOCK_PUID:-33}"
 PGID="${RUNDOCK_PGID:-33}"
 
 COMPOSE="$RUNDOCK_BIN_PATH/compose"
-CMD="$COMPOSE exec -u $PUID:$PGID"
+EXEC_AS_ROOT="$COMPOSE exec"
+EXEC_AS_USER="$COMPOSE exec -u $PUID:$PGID"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
@@ -161,37 +162,44 @@ then
 fi
 
 # Command alias
+if [[ "$1" == "artisan" ]]
+then
+    $EXEC_AS_USER app php ${@}
+
+    exit
+fi
+
 if [[ "$1" == "git"  ]]
 then
-    $CMD app git ${@}
+    $EXEC_AS_USER app git ${@}
 
     exit
 fi
 
 if [[ "$1" == "php" || "$1" == "composer" ]]
 then
-    $CMD app ${@}
+    $EXEC_AS_USER app ${@}
 
     exit
 fi
 
-if [[ "$1" == "artisan" ]]
+if [[ "$1" == "nginx" ]]
 then
-    $CMD app php ${@}
+    $EXEC_AS_ROOT nginx ${@}
 
     exit
 fi
 
 if [[ "$1" == "redis-cli" ]]
 then
-    $CMD redis ${@}
+    $EXEC_AS_USER redis ${@}
 
     exit
 fi
 
 if [[ "$1" == "supervisorctl" ]]
 then
-    $CMD supervisor ${@}
+    $EXEC_AS_USER supervisor ${@}
 
     exit
 fi

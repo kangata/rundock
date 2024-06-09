@@ -19,6 +19,7 @@ PGID="${RUNDOCK_PGID:-33}"
 COMPOSE="$RUNDOCK_BIN_PATH/compose"
 EXEC_AS_ROOT="$COMPOSE exec"
 EXEC_AS_USER="$COMPOSE exec -u $PUID:$PGID"
+PHP_SERVICE_NAME="${PHP_SERVICE_NAME:-app}"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
@@ -206,21 +207,21 @@ fi
 # Command alias
 if [[ "$1" == "artisan" ]]
 then
-    $EXEC_AS_USER app php ${@}
+    $EXEC_AS_USER $PHP_SERVICE_NAME php ${@}
 
     exit
 fi
 
 if [[ "$1" == "git"  ]]
 then
-    $EXEC_AS_USER app ${@}
+    $EXEC_AS_USER $PHP_SERVICE_NAME ${@}
 
     exit
 fi
 
 if [[ "$1" == "php" || "$1" == "composer" ]]
 then
-    $EXEC_AS_USER app ${@}
+    $EXEC_AS_USER $PHP_SERVICE_NAME ${@}
 
     exit
 fi

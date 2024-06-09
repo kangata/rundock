@@ -1,6 +1,6 @@
 services:
   supervisor:
-    image: quetzalarc/php-laravel:8.1-supervisor-alpine
+    image: quetzalarc/php-laravel::tag
     restart: always
     volumes:
       - ${PROJECT_PATH}:/var/www/html

@@ -22,12 +22,35 @@ EXEC_AS_USER="$COMPOSE exec -u $PUID:$PGID"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
+declare -A tags
+tags[app-nginx]="8.3-fpm-alpine"
+tags[nginx]="alpine"
+tags[php-cron]="8.3-cron-alpine"
+tags[php-fpm]="8.3-fpm-alpine"
+tags[php-supervisor]="8.3-supervisor-alpine"
+tags[php-swoole]="8.3-swoole-alpine"
+tags[redis]="alpine"
+
 # Check environment
 if [[ "$1" == "local" || "$1" == "dev" || "$1" == "staging" || "$1" == "production" ]]
 then
     APP_ENV=$1
 
     shift 1
+fi
+
+if [[ "$1" == "--run" ]]
+then
+    if [[ "$3" =~ "composer" ||  "$3" =~ "git" || "$3" =~ "php" ]]
+    then
+        docker run -it --rm \
+            -u "$PUID:$PGID" \
+            -v "$PROJECT_PATH":/var/www/html \
+            -w /var/www/html \
+            quetzalarc/php-laravel:"$2" ${@:3}
+    fi
+
+    exit
 fi
 
 # Add service
@@ -47,13 +70,20 @@ then
 
     cp "$RUNDOCK_STUBS_PATH/$2.stub" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
 
-    # Add php config
-    if [[ "$2" =~ "app-nginx" ]]
+    if [[ "$3" ]]
     then
-        cp "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
+        sed -i -E "s/:tag/$3/g" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+    else
+        sed -i -E "s/:tag/${tags[$2]}/g" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+    fi
 
-        sed -i -E "s/^user = .*/user = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
-        sed -i -E "s/^group = .*/group = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/www.conf"
+    # Add php config
+    if [[ "$2" =~ "app-nginx" || "$2" =~ "php-fpm" ]]
+    then
+        cp "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
+
+        sed -i -E "s/^user = .*/user = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
+        sed -i -E "s/^group = .*/group = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
 
         if [[ "$APP_ENV" == "local" || "$APP_ENV" == "dev" ]]
         then
@@ -61,6 +91,11 @@ then
         else
             cp "$RUNDOCK_BASE_PATH/php/php.ini-production" "$RUNDOCK_BASE_PATH/php/php.ini"
         fi
+    fi
+
+    if [[ "$2" =~ "php-cron" ]]
+    then
+        cp "$RUNDOCK_BASE_PATH/cron/schedule_run.sh.template" "$RUNDOCK_BASE_PATH/cron/schedule_run.sh"
     fi
 
     if [[ "$2" =~ "supervisor" ]]
@@ -135,12 +170,19 @@ then
         mkdir "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR"
     fi
 
-    if [[ "$2" =~ "app-nginx" ]]
+    if [[ "$2" =~ "app-nginx" || "$2" =~ "php-fpm" ]]
     then
         cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         cp -r "$RUNDOCK_BASE_PATH/php-fpm.d" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
         cp -r "$RUNDOCK_BASE_PATH/php" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+
+        exit
+    fi
+
+    if [[ "$2" =~ "php-cron" ]]
+    then
+        cp -r "$RUNDOCK_BASE_PATH/cron" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi

@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
-  app:
-    image: quetzalarc/php-laravel:8.3-swoole
+  swoole:
+    image: quetzalarc/php-laravel::tag
     restart: always
     volumes:
       - ${PROJECT_PATH}:/var/www

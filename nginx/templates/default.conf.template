@@ -10,6 +10,8 @@ server {
 
     fastcgi_hide_header X-Powered-By;
 
+    server_tokens off;
+
     index index.php;
 
     charset utf-8;

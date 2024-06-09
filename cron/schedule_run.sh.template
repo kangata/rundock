@@ -1,0 +1,5 @@
+#!/bin/sh
+
+su -s /bin/sh www-data <<EOF
+/usr/local/bin/php /var/www/html/artisan schedule:run
+EOF

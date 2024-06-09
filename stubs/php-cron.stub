@@ -1,0 +1,13 @@
+services:
+  cron:
+    image: quetzalarc/php-laravel::tag
+    restart: always
+    volumes:
+      - ${PROJECT_PATH}:/var/www/html
+      - ${RUNDOCK_BASE_PATH}/cron/schedule_run.sh:/etc/periodic/1min/schedule_run.sh
+    logging:
+      options:
+        max-file: '1'
+        max-size: '1m'
+    environment:
+      - TZ=Asia/Jakarta

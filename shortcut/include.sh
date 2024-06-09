@@ -20,9 +20,9 @@ then
     cp "$PHP_PATH/$phpini" "$PHP_PATH/php.ini"
 fi
 
-if [[ -d "$FPM_PATH" && ! -f "$FPM_PATH/www.conf" ]]
+if [[ -d "$FPM_PATH" && ! -f "$FPM_PATH/zz-docker.conf" ]]
 then
-    cp $FPM_PATH/www.conf-default $FPM_PATH/www.conf
+    cp $FPM_PATH/zz-docker.conf-default $FPM_PATH/zz-docker.conf
 fi
 
 if [[ -d "$SUPERVISOR_CONF_PATH" ]]

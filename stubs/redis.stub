@@ -1,6 +1,6 @@
 services:
   redis:
-    image: redis:alpine
+    image: redis::tag
     restart: always
     volumes:
       - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/redis:/data

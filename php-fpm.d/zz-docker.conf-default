@@ -1,0 +1,7 @@
+[global]
+daemonize = no
+
+[www]
+user = 33
+group = 33
+listen = 9000

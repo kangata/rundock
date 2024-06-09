@@ -70,3 +70,16 @@ FORWARD_MAILPIT_SMTP_PORT=1025
 ```
 - TZ=Asia/Jakarta
 ```
+
+
+
+## Extras
+```
+docker run -it --rm \
+    -u 33:33 \
+    -v $(pwd):/var/www/html \
+    -w /var/www/html \
+    -e "TZ=Asia/Jakarta" \
+    quetzalarc/php-laravel:8.3-alpine \
+    composer 
+```

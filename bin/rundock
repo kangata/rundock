@@ -171,7 +171,7 @@ fi
 
 if [[ "$1" == "git"  ]]
 then
-    $EXEC_AS_USER app git ${@}
+    $EXEC_AS_USER app ${@}
 
     exit
 fi

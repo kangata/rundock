@@ -23,6 +23,8 @@ PHP_SERVICE_NAME="${PHP_SERVICE_NAME:-app}"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
+export COMPOSE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${RUNDOCK_BASE_PATH}}/$APP_ENV-confs"
+
 declare -A tags
 tags[app-nginx]="8.3-fpm-alpine"
 tags[nginx]="alpine"
@@ -64,18 +66,18 @@ then
         exit
     fi
 
-    if [[ ! -d "$RUNDOCK_BASE_PATH/$APP_ENV-confs" ]]
+    if [[ ! -d "$COMPOSE_CONF_DIR" ]]
     then
-        mkdir "$RUNDOCK_BASE_PATH/$APP_ENV-confs"
+        mkdir "$COMPOSE_CONF_DIR"
     fi
 
-    cp "$RUNDOCK_STUBS_PATH/$2.stub" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+    cp "$RUNDOCK_STUBS_PATH/$2.stub" "$COMPOSE_CONF_DIR/$2.yaml"
 
     if [[ "$3" ]]
     then
-        sed -i -E "s/:tag/$3/g" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+        sed -i -E "s/:tag/$3/g" "$COMPOSE_CONF_DIR/$2.yaml"
     else
-        sed -i -E "s/:tag/${tags[$2]}/g" "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+        sed -i -E "s/:tag/${tags[$2]}/g" "$COMPOSE_CONF_DIR/$2.yaml"
     fi
 
     # Add php config
@@ -124,14 +126,14 @@ fi
 
 if [[ "$1" == "remove" ]]
 then
-    if [[ ! -f "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml" ]]
+    if [[ ! -f "$COMPOSE_CONF_DIR/$2.yaml" ]]
     then
         printf "Service not installed.\n"
 
         exit
     fi
 
-    rm "$RUNDOCK_BASE_PATH/$APP_ENV-confs/$2.yaml"
+    rm "$COMPOSE_CONF_DIR/$2.yaml"
 
     echo "$2: removed"
 
@@ -146,7 +148,7 @@ then
         mkdir "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR"
     fi
 
-    cp -r "$RUNDOCK_BASE_PATH/$APP_ENV-confs" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+    cp -r "$COMPOSE_CONF_DIR" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
     for file in $(find "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
     do

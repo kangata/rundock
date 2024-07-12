@@ -38,7 +38,7 @@ load_config() {
 }
 
 use_default_config() {
-    load_config "$RUNDOCK_BASE_PATH/$APP_ENV-confs"
+    load_config "$COMPOSE_CONF_DIR"
 }
 
 if [[ -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs" ]]

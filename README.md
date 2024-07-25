@@ -11,6 +11,11 @@
 
 ## Enviroment
 
+### Compose
+```
+OVERRIDE_COMPOSE_CONF_DIR=
+```
+
 ### Networks
 ```
 NETWORK_DEFAULT_NAME=

@@ -10,7 +10,7 @@ minfds=1024
 minprocs=200
 user=33
 logfile=/var/www/html/storage/logs/supervisor/supervisord.log
-pidfile=/var/run/supervisord.pid
+pidfile=/tmp/supervisord.pid
 
 [supervisorctl]
 serverurl=unix:///tmp/supervisor.sock

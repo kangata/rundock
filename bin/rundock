@@ -24,6 +24,17 @@ PHP_SERVICE_NAME="${PHP_SERVICE_NAME:-app}"
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
 export COMPOSE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${RUNDOCK_BASE_PATH}}/$APP_ENV-confs"
+export SERVICE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${RUNDOCK_BASE_PATH}}"
+
+if [[ ! -d "$COMPOSE_CONF_DIR" ]]
+then
+    mkdir -p "$COMPOSE_CONF_DIR"
+fi
+
+if [[ ! -d "$SERVICE_CONF_DIR" ]]
+then
+    mkdir -p "$SERVICE_CONF_DIR"
+fi
 
 declare -A tags
 tags[app-nginx]="8.3-fpm-alpine"
@@ -80,42 +91,74 @@ then
         sed -i -E "s/:tag/${tags[$2]}/g" "$COMPOSE_CONF_DIR/$2.yaml"
     fi
 
+    # Add nginx config
+    if [[ "$2" =~ "app-nginx" || "$2" =~ "nginx" ]]
+    then
+        if [[ ! -d "$SERVICE_CONF_DIR/nginx/templates" ]]
+        then
+            mkdir -p "$SERVICE_CONF_DIR/nginx/templates"
+        fi
+
+        cp "$RUNDOCK_BASE_PATH/nginx/nginx.conf" "$SERVICE_CONF_DIR/nginx/nginx.conf"
+        cp "$RUNDOCK_BASE_PATH/nginx/templates/default.conf.template" "$SERVICE_CONF_DIR/nginx/templates/default.conf.template"
+    fi
+
     # Add php config
     if [[ "$2" =~ "app-nginx" || "$2" =~ "php-fpm" ]]
     then
-        cp "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf-default" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
+        if [[ ! -d "$SERVICE_CONF_DIR/php-fpm.d" ]]
+        then
+            mkdir -p "$SERVICE_CONF_DIR/php-fpm.d"
+        fi
 
-        sed -i -E "s/^user = .*/user = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
-        sed -i -E "s/^group = .*/group = $PUID/g" "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf"
+        cp "$RUNDOCK_BASE_PATH/php-fpm.d/zz-docker.conf-default" "$SERVICE_CONF_DIR/php-fpm.d/zz-docker.conf"
+
+        sed -i -E "s/^user = .*/user = $PUID/g" "$SERVICE_CONF_DIR/php-fpm.d/zz-docker.conf"
+        sed -i -E "s/^group = .*/group = $PUID/g" "$SERVICE_CONF_DIR/php-fpm.d/zz-docker.conf"
+
+        if [[ ! -d "$SERVICE_CONF_DIR/php" ]]
+        then
+            mkdir -p "$SERVICE_CONF_DIR/php"
+        fi
 
         if [[ "$APP_ENV" == "local" || "$APP_ENV" == "dev" ]]
         then
-            cp "$RUNDOCK_BASE_PATH/php/php.ini-development" "$RUNDOCK_BASE_PATH/php/php.ini"
+            cp "$RUNDOCK_BASE_PATH/php/php.ini-development" "$SERVICE_CONF_DIR/php/php.ini"
         else
-            cp "$RUNDOCK_BASE_PATH/php/php.ini-production" "$RUNDOCK_BASE_PATH/php/php.ini"
+            cp "$RUNDOCK_BASE_PATH/php/php.ini-production" "$SERVICE_CONF_DIR/php/php.ini"
         fi
     fi
 
     if [[ "$2" =~ "php-cron" ]]
     then
-        cp "$RUNDOCK_BASE_PATH/cron/schedule_run.sh.template" "$RUNDOCK_BASE_PATH/cron/schedule_run.sh"
+        if [[ ! -d "$SERVICE_CONF_DIR/cron" ]]
+        then
+            mkdir -p "$SERVICE_CONF_DIR/cron"
+        fi
+
+        cp "$RUNDOCK_BASE_PATH/cron/schedule_run.sh.template" "$SERVICE_CONF_DIR/cron/schedule_run.sh"
     fi
 
     if [[ "$2" =~ "supervisor" ]]
     then
-        cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
-    
-        sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf"
-
-        if [[ "$3" == "--horizon" ]]
+        if [[ ! -d "$SERVICE_CONF_DIR/supervisor/conf.d" ]]
         then
-            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf"
+            mkdir -p "$SERVICE_CONF_DIR/supervisor/conf.d"
+        fi
 
-            sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf"
+        cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$SERVICE_CONF_DIR/supervisor/conf.d/supervisord.conf"
+    
+        sed -i -E "s/^user=.*/user=$PUID/g" "$SERVICE_CONF_DIR/supervisor/conf.d/supervisord.conf"
+
+        if [[ "$3" == "--horizon" || "$4" == "--horizon" ]]
+        then
+            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/horizon.conf-default" "$SERVICE_CONF_DIR/supervisor/conf.d/horizon.conf"
+
+            sed -i -E "s/^user=.*/user=$PUID/g" "$SERVICE_CONF_DIR/supervisor/conf.d/horizon.conf"
         else
-            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+            cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf-default" "$SERVICE_CONF_DIR/supervisor/conf.d/default.conf"
 
-            sed -i -E "s/^user=.*/user=$PUID/g" "$RUNDOCK_BASE_PATH/supervisor/conf.d/default.conf"
+            sed -i -E "s/^user=.*/user=$PUID/g" "$SERVICE_CONF_DIR/supervisor/conf.d/default.conf"
         fi
     fi
 
@@ -175,24 +218,24 @@ then
 
     if [[ "$2" =~ "app-nginx" || "$2" =~ "php-fpm" ]]
     then
-        cp -r "$RUNDOCK_BASE_PATH/nginx" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$SERVICE_CONF_DIR/nginx" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
-        cp -r "$RUNDOCK_BASE_PATH/php-fpm.d" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
-        cp -r "$RUNDOCK_BASE_PATH/php" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$SERVICE_CONF_DIR/php-fpm.d" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$SERVICE_CONF_DIR/php" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi
 
     if [[ "$2" =~ "php-cron" ]]
     then
-        cp -r "$RUNDOCK_BASE_PATH/cron" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$SERVICE_CONF_DIR/cron" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi
 
     if [[ "$2" =~ "supervisor" ]]
     then
-        cp -r "$RUNDOCK_BASE_PATH/supervisor" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
+        cp -r "$SERVICE_CONF_DIR/supervisor" "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/"
 
         exit
     fi

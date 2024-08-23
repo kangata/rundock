@@ -6,6 +6,8 @@ export RUNDOCK_STUBS_PATH="$RUNDOCK_BASE_PATH/stubs"
 
 export PROJECT_PATH="$(realpath $(dirname $(dirname $(dirname $RUNDOCK_BASE_PATH))))"
 export PROJECT_RUNDOCK_DIR="${PROJECT_RUNDOCK_DIR:-rundock}"
+export PROJECT_RUNDOCK_DATA_DIR="$PROJECT_RUNDOCK_DIR/data"
+export PROJECT_RUNDOCK_CONFIG_DIR="$PROJECT_RUNDOCK_DATA_DIR/.config"
 
 # Read .env file
 if [[ -f "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/.env" ]]
@@ -23,8 +25,8 @@ PHP_SERVICE_NAME="${PHP_SERVICE_NAME:-app}"
 
 export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
 
-export COMPOSE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${RUNDOCK_BASE_PATH}}/$APP_ENV-confs"
-export SERVICE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${RUNDOCK_BASE_PATH}}"
+export COMPOSE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${PROJECT_PATH}/${PROJECT_RUNDOCK_CONFIG_DIR}}/$APP_ENV-confs"
+export SERVICE_CONF_DIR="${OVERRIDE_COMPOSE_CONF_DIR:-${PROJECT_PATH}/${PROJECT_RUNDOCK_CONFIG_DIR}}"
 
 if [[ ! -d "$COMPOSE_CONF_DIR" ]]
 then
@@ -147,8 +149,6 @@ then
         fi
 
         cp "$RUNDOCK_BASE_PATH/supervisor/conf.d/supervisord.conf-default" "$SERVICE_CONF_DIR/supervisor/conf.d/supervisord.conf"
-    
-        sed -i -E "s/^user=.*/user=$PUID/g" "$SERVICE_CONF_DIR/supervisor/conf.d/supervisord.conf"
 
         if [[ "$3" == "--horizon" || "$4" == "--horizon" ]]
         then

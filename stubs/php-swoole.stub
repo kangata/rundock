@@ -4,7 +4,7 @@ services:
     restart: always
     volumes:
       - ${PROJECT_PATH}:/var/www
-      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
+      - ${RUNDOCK_PATH}/data/.config:/.config
     logging:
       options:
         max-file: '1'

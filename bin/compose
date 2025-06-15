@@ -4,7 +4,7 @@ export PROJECT_NAME="${PROJECT_NAME:-$(basename "$PROJECT_PATH")}"
 
 export APP_ENV="${APP_ENV:-dev}"
 
-MERGE_COMPOSE="${MERGE_COMPOSE:-false}"
+MERGE_COMPOSE="${RUNDOCK_MERGE_COMPOSE:-false}"
 
 CMD="docker compose -p $PROJECT_NAME-$APP_ENV"
 
@@ -31,31 +31,26 @@ load_config() {
             fi
         done
     else
-        printf "Directory $1 does not exists.\n\n"
+        printf "Directory $1 does not exists. [2]\n\n"
 
         exit
     fi
 }
 
 use_default_config() {
-    load_config "$COMPOSE_CONF_DIR"
+    load_config "$COMPOSE_CONF_PATH"
 }
 
-if [[ -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs" ]]
+if [[ -d "$RUNDOCK_PATH/$APP_ENV-confs" ]]
 then
     if $MERGE_COMPOSE -eq true
     then
         use_default_config
     fi
 
-    load_config "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/$APP_ENV-confs"
+    load_config "$RUNDOCK_PATH/$APP_ENV-confs"
 else
     use_default_config
-fi
-
-if [[ ! -d "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/data" ]]
-then
-    mkdir -p "$PROJECT_PATH/$PROJECT_RUNDOCK_DIR/data"
 fi
 
 # Run docker compose

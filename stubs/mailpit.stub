@@ -6,7 +6,7 @@ services:
       - ${FORWARD_MAILPIT_WEB_UI_PORT:-8025}:8025
       - ${FORWARD_MAILPIT_SMTP_PORT:-1025}:1025
     volumes:
-      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/mailpit:/data
+      - ${RUNDOCK_PATH}/data/mailpit:/data
     environment:
       - TZ=Asia/Jakarta
       - MP_DATA_FILE=/data/mailpit.db

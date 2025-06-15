@@ -6,7 +6,7 @@ services:
       - ${PROJECT_PATH}:/var/www/html
       - ${PROJECT_PATH}/storage/logs/supervisor:/var/log/supervisor
       - ${SERVICE_CONF_DIR}/supervisor/conf.d:/etc/supervisor/conf.d
-      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
+      - ${RUNDOCK_PATH}/data/.config:/.config
     logging:
       options:
         max-file: '1'

@@ -6,7 +6,7 @@ services:
       - ${PROJECT_PATH}:/var/www/html
       - ${SERVICE_CONF_DIR}/php/php.ini:/usr/local/etc/php/php.ini
       - ${SERVICE_CONF_DIR}/php-fpm.d/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      - ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
+      - ${RUNDOCK_PATH}/data/.config:/.config
     logging:
       options:
         max-file: '1'

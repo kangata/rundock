@@ -10,10 +10,19 @@
 
 
 ## Enviroment
-
-### Compose
 ```
-OVERRIDE_COMPOSE_CONF_DIR=
+RUNDOCK_APP_ENV=dev
+
+RUNDOCK_MERGE_COMPOSE=true
+
+RUNDOCK_PUID=33
+RUNDOCK_PGID=33
+```
+
+### Directory
+```
+OVERRIDE_COMPOSE_CONF_PATH=
+OVERRIDE_SERVICE_CONF_PATH=
 ```
 
 ### Networks
@@ -69,7 +78,7 @@ FORWARD_MAILPIT_SMTP_PORT=1025
 - ${PROJECT_PATH}:/var/www/html
 - ${RUNDOCK_BASE_PATH}/php/php.ini:/usr/local/etc/php/php.ini
 - ${RUNDOCK_BASE_PATH}/php-fpm.d/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-- ${PROJECT_PATH}/${PROJECT_RUNDOCK_DIR}/data/.config:/.config
+- ${RUNDOCK_PATH}/data/.config:/.config
 ```
 #### Default Environment
 ```
@@ -85,6 +94,6 @@ docker run -it --rm \
     -v $(pwd):/var/www/html \
     -w /var/www/html \
     -e "TZ=Asia/Jakarta" \
-    quetzalarc/php-laravel:8.3-alpine \
+    quetzalarc/php-laravel:8.4-alpine \
     composer 
 ```

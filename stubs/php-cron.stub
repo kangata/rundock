@@ -10,4 +10,4 @@ services:
         max-file: '1'
         max-size: '1m'
     environment:
-      - TZ=Asia/Jakarta
+      - TZ=${TIMEZONE:-Asia/Jakarta}

@@ -6,10 +6,9 @@ services:
       - ${PROJECT_PATH}:/var/www/html
       - ${PROJECT_PATH}/storage/logs/supervisor:/var/log/supervisor
       - ${SERVICE_CONF_PATH}/supervisor/conf.d:/etc/supervisor/conf.d
-      - ${RUNDOCK_PATH}/data/.config:/.config
     logging:
       options:
         max-file: '1'
         max-size: '1m'
     environment:
-      - TZ=Asia/Jakarta
+      - TZ=${TIMEZONE:-Asia/Jakarta}

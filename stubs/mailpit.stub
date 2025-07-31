@@ -8,5 +8,5 @@ services:
     volumes:
       - ${RUNDOCK_PATH}/data/mailpit:/data
     environment:
-      - TZ=Asia/Jakarta
       - MP_DATA_FILE=/data/mailpit.db
+      - TZ=${TIMEZONE:-Asia/Jakarta}

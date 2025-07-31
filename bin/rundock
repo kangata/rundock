@@ -4,7 +4,7 @@ export RUNDOCK_BASE_PATH="$(realpath $(dirname $(dirname $0)))"
 export RUNDOCK_BIN_PATH="$RUNDOCK_BASE_PATH/bin"
 export RUNDOCK_STUBS_PATH="$RUNDOCK_BASE_PATH/stubs"
 
-export RUNDOCK_DIR_NAME="${RUNDOCK_DIR_NAME:-rundock}"
+export RUNDOCK_DIR_NAME="${RUNDOCK_DIR_NAME:-.rundock}"
 
 export PROJECT_PATH="$(realpath $(dirname $(dirname $(dirname $RUNDOCK_BASE_PATH))))"
 
@@ -12,14 +12,13 @@ export RUNDOCK_PATH="$PROJECT_PATH/$RUNDOCK_DIR_NAME"
 export RUNDOCK_DATA_PATH="$RUNDOCK_PATH/data"
 export RUNDOCK_CONFIG_PATH="$RUNDOCK_DATA_PATH/.config"
 
-if [[ ! -d "$RUNDOCK_DATA_PATH" ]]
-then
-    mkdir -p "$RUNDOCK_DATA_PATH"
-fi
-
 if [[ ! -d "$RUNDOCK_CONFIG_PATH" ]]
 then
     mkdir -p "$RUNDOCK_CONFIG_PATH"
+
+    echo -e "*\n\n!.gitignore\n!.env.example\n\n!data/\n!dev-confs/\n!production-confs/" > "$RUNDOCK_PATH/.gitignore"
+    echo -e "*\n\n!.gitignore\n\n!.config/" > "$RUNDOCK_DATA_PATH/.gitignore"
+    echo -e "*\n\n!.gitignore" > "$RUNDOCK_CONFIG_PATH/.gitignore"
 fi
 
 # Read .env file
@@ -28,9 +27,9 @@ then
     export $(grep -v "^#" "$RUNDOCK_PATH/.env" | xargs)
 fi
 
-export APP_ENV="${RUNDOCK_APP_ENV:-dev}"
+export RUNDOCK_ENV="${RUNDOCK_ENV:-dev}"
 
-export COMPOSE_CONF_PATH="${OVERRIDE_COMPOSE_CONF_PATH:-${RUNDOCK_CONFIG_PATH}}/$APP_ENV-confs"
+export COMPOSE_CONF_PATH="${OVERRIDE_COMPOSE_CONF_PATH:-${RUNDOCK_CONFIG_PATH}}/$RUNDOCK_ENV-confs"
 export SERVICE_CONF_PATH="${OVERRIDE_SERVICE_CONF_PATH:-${RUNDOCK_CONFIG_PATH}}"
 
 if [[ ! -d "$COMPOSE_CONF_PATH" ]]
@@ -51,7 +50,9 @@ EXEC_AS_ROOT="$COMPOSE exec"
 EXEC_AS_USER="$COMPOSE exec -u $PUID:$PGID"
 PHP_SERVICE_NAME="${PHP_SERVICE_NAME:-app}"
 
+# default images
 declare -A tags
+tags[app-frankenphp]="8.4-frankenphp"
 tags[app-nginx]="8.4-fpm-alpine"
 tags[nginx]="alpine"
 tags[php-cron]="8.4-cron-alpine"
@@ -63,7 +64,7 @@ tags[redis]="alpine"
 # Check environment
 if [[ "$1" == "local" || "$1" == "dev" || "$1" == "staging" || "$1" == "production" ]]
 then
-    APP_ENV=$1
+    RUNDOCK_ENV=$1
 
     shift 1
 fi
@@ -77,6 +78,42 @@ then
             -v "$PROJECT_PATH":/var/www/html \
             -w /var/www/html \
             quetzalarc/php-laravel:"$2" ${@:3}
+    fi
+
+    exit
+fi
+
+# Init
+if [[ "$1" == "init" ]]
+then
+    ln -s "$PROJECT_PATH/vendor/bin/rundock" "$PROJECT_PATH/run"
+
+    if [[ -f "$RUNDOCK_PATH/.env.example" ]]
+    then
+        echo -e "\n$RUNDOCK_PATH/.env.example is already exists." 
+
+        exit
+    fi
+
+    touch "$RUNDOCK_PATH/.env.example"
+
+    echo "RUNDOCK_ENV=dev" >> "$RUNDOCK_PATH/.env.example"
+    echo -e "" >> "$RUNDOCK_PATH/.env.example"
+    echo -e "RUNDOCK_PUID=33" >> "$RUNDOCK_PATH/.env.example"
+    echo -e "RUNDOCK_PUID=33" >> "$RUNDOCK_PATH/.env.example"
+
+    cp "$RUNDOCK_PATH/.env.example" "$RUNDOCK_PATH/.env"
+
+    echo -e "\nUpdate $RUNDOCK_PATH/.env as needed."
+
+    if [[ ! -d "$RUNDOCK_PATH/$RUNDOCK_ENV-confs" ]]
+    then
+        mkdir "$RUNDOCK_PATH/$RUNDOCK_ENV-confs"
+    fi
+
+    if [[ -f "$RUNDOCK_PATH/$RUNDOCK_ENV-confs/.gitignore" ]]
+    then
+        echo -e "*\n\n!.gitignore\n!docker-compose.yml" > "$RUNDOCK_PATH/$RUNDOCK_ENV-confs/.gitignore"
     fi
 
     exit
@@ -111,6 +148,8 @@ then
 
         cp "$RUNDOCK_BASE_PATH/nginx/nginx.conf" "$SERVICE_CONF_PATH/nginx/nginx.conf"
         cp "$RUNDOCK_BASE_PATH/nginx/templates/default.conf.template" "$SERVICE_CONF_PATH/nginx/templates/default.conf.template"
+
+        echo -e "NGINX_HTTP_PORT=8000\n"
     fi
 
     # Add php config
@@ -131,7 +170,7 @@ then
             mkdir -p "$SERVICE_CONF_PATH/php"
         fi
 
-        if [[ "$APP_ENV" == "local" || "$APP_ENV" == "dev" ]]
+        if [[ "$RUNDOCK_ENV" != "production" ]]
         then
             cp "$RUNDOCK_BASE_PATH/php/php.ini-development" "$SERVICE_CONF_PATH/php/php.ini"
         else
@@ -147,6 +186,11 @@ then
         fi
 
         cp "$RUNDOCK_BASE_PATH/cron/schedule_run.sh.template" "$SERVICE_CONF_PATH/cron/schedule_run.sh"
+
+        if [[ "$PUID" == 1000 ]]
+        then
+            sed -i -E "s/ www / dev /g" "$SERVICE_CONF_PATH/cron/schedule_run.sh"
+        fi
     fi
 
     if [[ "$2" =~ "supervisor" ]]
@@ -175,7 +219,7 @@ then
     exit
 fi
 
-if [[ "$1" == "remove" ]]
+if [[ "$1" == "remove" || "$1" == "rm" ]]
 then
     if [[ ! -f "$COMPOSE_CONF_PATH/$2.yaml" ]]
     then
@@ -201,7 +245,7 @@ then
 
     cp -r "$COMPOSE_CONF_PATH" "$RUNDOCK_PATH/"
 
-    for file in $(find "$RUNDOCK_PATH/$APP_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
+    for file in $(find "$RUNDOCK_PATH/$RUNDOCK_ENV-confs" -regex '^\(.*yml\|.*yaml\)$')
     do
         sed -i 's#${RUNDOCK_BASE_PATH}#${RUNDOCK_PATH}#g' $file
     done

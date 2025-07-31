@@ -6,13 +6,12 @@ services:
       - ${PROJECT_PATH}:/var/www/html
       - ${SERVICE_CONF_PATH}/php/php.ini:/usr/local/etc/php/php.ini
       - ${SERVICE_CONF_PATH}/php-fpm.d/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      - ${RUNDOCK_PATH}/data/.config:/.config
     logging:
       options:
         max-file: '1'
         max-size: '1m'
     environment:
-      - TZ=Asia/Jakarta
+      - TZ=${TIMEZONE:-Asia/Jakarta}
 
 networks:
   default:
